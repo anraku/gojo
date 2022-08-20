@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -30,6 +29,7 @@ func run(args []string) error {
 	}
 
 	var res string
+	var b []byte
 	var err error
 	if array {
 		res, err = printArray(args)
@@ -42,14 +42,18 @@ func run(args []string) error {
 			return err
 		}
 	} else {
-		return errors.New("no option specified")
+		b, err = buildStructJSON(args)
+		if err != nil {
+			return err
+		}
+		res = string(b)
 	}
 
 	fmt.Printf("%s\n", res)
 	return nil
 }
 
-func printPretty(args []string) (string, error) {
+func buildStructJSON(args []string) ([]byte, error) {
 	jsonMap := make(map[string]string)
 	for _, v := range args {
 		kv := strings.Split(v, "=")
@@ -60,6 +64,15 @@ func printPretty(args []string) (string, error) {
 	}
 
 	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func printPretty(args []string) (string, error) {
+	b, err := buildStructJSON(args)
 	if err != nil {
 		return "", err
 	}
