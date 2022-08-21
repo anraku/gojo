@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -42,7 +43,17 @@ func run(args []string) error {
 			return err
 		}
 	} else {
-		b, err = buildStructJSON(args)
+		var strs []string
+		if len(args) == 0 {
+			sc := bufio.NewScanner(os.Stdin)
+			if sc.Scan() {
+				b := sc.Bytes()
+				strs = strings.Split(string(b), " ")
+			}
+		} else {
+			strs = args
+		}
+		b, err = buildStructJSON(strs)
 		if err != nil {
 			return err
 		}
@@ -72,7 +83,17 @@ func buildStructJSON(args []string) ([]byte, error) {
 }
 
 func printPretty(args []string) (string, error) {
-	b, err := buildStructJSON(args)
+	var strs []string
+	if len(args) == 1 { // pretty optionのみならば、標準入力待ちになる
+		sc := bufio.NewScanner(os.Stdin)
+		if sc.Scan() {
+			b := sc.Bytes()
+			strs = strings.Split(string(b), " ")
+		}
+	} else {
+		strs = args
+	}
+	b, err := buildStructJSON(strs)
 	if err != nil {
 		return "", err
 	}
@@ -95,8 +116,17 @@ func printArray(args []string) (string, error) {
 		}
 	}
 	args = append(args[:idx], args[idx+1:]...)
-
-	b, err := json.Marshal(args)
+	var strs []string
+	if len(args) == 0 {
+		sc := bufio.NewScanner(os.Stdin)
+		if sc.Scan() {
+			b := sc.Bytes()
+			strs = strings.Split(string(b), " ")
+		}
+	} else {
+		strs = args
+	}
+	b, err := json.Marshal(strs)
 	if err != nil {
 		return "", err
 	}
